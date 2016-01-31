@@ -1,4 +1,6 @@
-﻿using Topshelf;
+﻿using System;
+using System.Diagnostics;
+using Topshelf;
 
 namespace GitPusher
 {
@@ -6,6 +8,7 @@ namespace GitPusher
     {
         static void Main(string[] args)
         {
+            System.AppDomain.CurrentDomain.UnhandledException += GlobalExceptionHandler;
             HostFactory.Run(x =>
             {
                 x.Service<IService>(s =>
@@ -21,6 +24,12 @@ namespace GitPusher
                 x.SetServiceName("GitPusher");
             });
 
+        }
+
+        private static void GlobalExceptionHandler(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (Debugger.IsAttached)
+                Debugger.Break();
         }
     }
 }
