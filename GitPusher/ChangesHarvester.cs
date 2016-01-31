@@ -21,6 +21,9 @@ namespace GitPusher
         {
             var fileInfo = new ChangeInfo(path, _basePath, changeType);
 
+            if (fileInfo.RelativePath.StartsWith(".git", StringComparison.InvariantCultureIgnoreCase))
+                return;
+
             _changes.AddOrUpdate(fileInfo.RelativePath, fileInfo, (key, existingInfo) =>
             {
                 if (!existingInfo.ChangeTypes.Any(c => c == changeType))
@@ -30,7 +33,7 @@ namespace GitPusher
 
             if (_timer == null)
             {
-                _timer = new Timer(OnTimer, _changes, TimeSpan.FromSeconds(15), Timeout.InfiniteTimeSpan);
+                _timer = new Timer(OnTimer, _changes, TimeSpan.FromSeconds(3), Timeout.InfiniteTimeSpan);
             }
         }
 
@@ -41,6 +44,8 @@ namespace GitPusher
             var fileInfos = dictionary.Values.ToList();
             // and clear items to be processed
             dictionary.Clear();
+            if (fileInfos.Any())
+                new GitCommitter().ProcessDirectory(_basePath);
             _timer.Dispose();
             _timer = null;
         }
