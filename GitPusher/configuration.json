@@ -1,0 +1,3 @@
+﻿{
+    Repositories: [ { BaseDir: "c:\\data\\testwatch"} ]
+}
