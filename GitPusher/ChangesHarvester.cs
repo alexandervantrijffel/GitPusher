@@ -8,18 +8,18 @@ namespace GitPusher
 {
     public class ChangesHarvester
     {
-        private readonly string _basePath;
+        private readonly RepositoryConfigurationInfo _config;
         private ConcurrentDictionary<string, ChangeInfo> _changes = new ConcurrentDictionary<string, ChangeInfo>();
         private Timer _timer;
 
-        public ChangesHarvester(string basePath)
+        public ChangesHarvester(RepositoryConfigurationInfo config)
         {
-            _basePath = basePath;
+            _config = config;
         }
 
         public void AddChange(string path, WatcherChangeTypes changeType)
         {
-            var fileInfo = new ChangeInfo(path, _basePath, changeType);
+            var fileInfo = new ChangeInfo(path, _config.BaseDir, changeType);
 
             if (fileInfo.RelativePath.StartsWith(".git", StringComparison.InvariantCultureIgnoreCase))
                 return;
@@ -33,7 +33,7 @@ namespace GitPusher
 
             if (_timer == null)
             {
-                _timer = new Timer(OnTimer, _changes, TimeSpan.FromSeconds(3), Timeout.InfiniteTimeSpan);
+                _timer = new Timer(OnTimer, _changes, TimeSpan.FromSeconds(_config.WaitBeforeCommit), Timeout.InfiniteTimeSpan);
             }
         }
 
@@ -45,7 +45,7 @@ namespace GitPusher
             // and clear items to be processed
             dictionary.Clear();
             if (fileInfos.Any())
-                new GitCommitter().ProcessDirectory(_basePath);
+                new GitCommitter().ProcessDirectory(_config.BaseDir);
             _timer.Dispose();
             _timer = null;
         }

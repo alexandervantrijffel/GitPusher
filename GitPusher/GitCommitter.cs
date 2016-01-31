@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using LibGit2Sharp;
 
@@ -18,8 +16,8 @@ namespace GitPusher
             {
                 repo.Config.Set("diff.renames", "copies");
 
-                var options = new StatusOptions {DetectRenamesInWorkDir = true, DetectRenamesInIndex = true};
-                RepositoryStatus status = repo.RetrieveStatus(options);
+                var retrievalOptions = new StatusOptions {DetectRenamesInWorkDir = true, DetectRenamesInIndex = true};
+                RepositoryStatus status = repo.RetrieveStatus(retrievalOptions);
                 if (status.IsDirty)
                 {
                     bool toCommit = false;
@@ -54,21 +52,22 @@ namespace GitPusher
                     if (toCommit || status.Staged.Any())
                     {
                         repo.Commit("GitPusher commit.");
+
+
+                        Remote remote = repo.Network.Remotes["testwatchremote"];
+                        var options = new PushOptions();
+
+                        //options.CredentialsProvider = new CredentialsHandler(
+                        //(url, usernameFromUrl, types) =>
+                        //    new UsernamePasswordCredentials()
+                        //    {
+                        //        Username = "myusername",
+                        //        Password = "mypassword"
+                        //    });
+
+                        var pushRefSpec = @"refs/heads/master";
+                        repo.Network.Push(remote, pushRefSpec, options, null, "GitPusher push");
                     }
-
-                    //Remote remote = repo.Network.Remotes["origin"];
-                    //var options = new PushOptions();
-
-                    //options.CredentialsProvider = new CredentialsHandler(
-                    //(url, usernameFromUrl, types) =>
-                    //    new UsernamePasswordCredentials()
-                    //    {
-                    //        Username = "myusername",
-                    //        Password = "mypassword"
-                    //    });
-
-                    //var pushRefSpec = @"refs/heads/master";
-                    //repo.Network.Push(remote, pushRefSpec, options, null, "push done...");
                 }
             }
         }

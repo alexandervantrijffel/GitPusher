@@ -1,5 +1,6 @@
-using System.Collections;
+using System;
 using System.IO;
+using Structura.SharedComponents.Utilities;
 
 namespace GitPusher
 {
@@ -8,10 +9,10 @@ namespace GitPusher
         private readonly ChangesHarvester _changesHarvester;
         private readonly FileSystemWatcher _watcher = new FileSystemWatcher();
 
-        public DirectoryWatcher(string basePath)
+        public DirectoryWatcher(RepositoryConfigurationInfo config)
         {
-            _changesHarvester = new ChangesHarvester(basePath);
-            _watcher.Path = basePath;
+            _changesHarvester = new ChangesHarvester(config);
+            _watcher.Path = config.BaseDir;
             _watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.LastAccess | NotifyFilters.FileName;
             _watcher.Filter = "*.*";
             _watcher.IncludeSubdirectories = true;
@@ -23,7 +24,15 @@ namespace GitPusher
 
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
-            _changesHarvester.AddChange(e.FullPath, e.ChangeType);
+            try
+            {
+                _changesHarvester.AddChange(e.FullPath, e.ChangeType);
+            }
+            catch (Exception ex)
+            {
+                FormatLoggerAccessor.Instance().Error(ex, 
+                    $"Unhandled exception while processing file change event for file {e.FullPath}");
+            }
         }
     }
 }
