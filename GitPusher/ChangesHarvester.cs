@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Structura.SharedComponents.Utilities;
 
 namespace GitPusher
 {
@@ -39,15 +40,22 @@ namespace GitPusher
 
         private void OnTimer(object state)
         {
-            var dictionary = (ConcurrentDictionary<string, ChangeInfo>)state;
-            // copy items to buffer
-            var fileInfos = dictionary.Values.ToList();
-            // and clear items to be processed
-            dictionary.Clear();
-            if (fileInfos.Any())
-                new GitCommitter().ProcessDirectory(_config.BaseDir);
-            _timer.Dispose();
-            _timer = null;
-        }
+	        try
+	        {
+				var dictionary = (ConcurrentDictionary<string, ChangeInfo>)state;
+				// copy items to buffer
+				var fileInfos = dictionary.Values.ToList();
+				// and clear items to be processed
+				dictionary.Clear();
+				if (fileInfos.Any())
+					new GitCommitter().ProcessDirectory(_config);
+				_timer.Dispose();
+				_timer = null;
+			}
+	        catch (Exception ex)
+	        {
+				FormatLoggerAccessor.Instance().Error(ex, "Unhandled exception while committing discovered changes: ");        
+	        }
+		}
     }
 }
