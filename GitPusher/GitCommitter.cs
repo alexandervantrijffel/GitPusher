@@ -17,8 +17,9 @@ namespace GitPusher
             using (var repo = new Repository(config.BaseDir))
             {
                 repo.Config.Set("diff.renames", "copies");
-
-                var retrievalOptions = new StatusOptions {DetectRenamesInWorkDir = true, DetectRenamesInIndex = true};
+				repo.Config.Set("http.postBuffer", 524288000);
+				
+				var retrievalOptions = new StatusOptions {DetectRenamesInWorkDir = true, DetectRenamesInIndex = true};
                 RepositoryStatus status = repo.RetrieveStatus(retrievalOptions);
                 if (status.IsDirty)
                 {
