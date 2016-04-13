@@ -16,9 +16,9 @@ namespace GitPusher
         {
             var directories = LoadRepositoryConfig().ToList();
             Task.Factory.StartNew(() =>
-                    Parallel.ForEach(directories, directory =>
+                    Parallel.ForEach(directories, config =>
                     {
-                        new GitCommitter().ProcessDirectory(directory.BaseDir);
+                        new GitCommitter().ProcessDirectory(config);
                     }));
             foreach (var directory in directories)
                 _directoryWatchers.Add(new DirectoryWatcher(directory));

@@ -45,7 +45,7 @@ namespace GitPusher
             // and clear items to be processed
             dictionary.Clear();
             if (fileInfos.Any())
-                new GitCommitter().ProcessDirectory(_config.BaseDir);
+                new GitCommitter().ProcessDirectory(_config);
             _timer.Dispose();
             _timer = null;
         }

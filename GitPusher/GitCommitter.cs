@@ -5,15 +5,16 @@ namespace GitPusher
 {
     public class GitCommitter
     {
-        public void ProcessDirectory(string repositoryPath)
+        public void ProcessDirectory(RepositoryConfigurationInfo config)
         {
-            if (!Repository.IsValid(repositoryPath))
+            if (!Repository.IsValid(config.BaseDir))
             {
-                Repository.Init(repositoryPath);
+                Repository.Init(config.BaseDir);
             }
 
-            using (var repo = new Repository(repositoryPath))
+            using (var repo = new Repository(config.BaseDir))
             {
+                // todo, if user.name or user.email are not set in config, set them now!
                 repo.Config.Set("diff.renames", "copies");
 
                 var retrievalOptions = new StatusOptions {DetectRenamesInWorkDir = true, DetectRenamesInIndex = true};
@@ -53,20 +54,23 @@ namespace GitPusher
                     {
                         repo.Commit("GitPusher commit.");
 
+                        foreach (var remoteName in config.Remotes)
+                        {
+                            var remote = repo.Network.Remotes[remoteName];
+                            var options = new PushOptions();
 
-                        Remote remote = repo.Network.Remotes["testwatchremote"];
-                        var options = new PushOptions();
+                            //options.CredentialsProvider = new CredentialsHandler(
+                            //(url, usernameFromUrl, types) =>
+                            //    new UsernamePasswordCredentials()
+                            //    {
+                            //        Username = "myusername",
+                            //        Password = "mypassword"
+                            //    });
 
-                        //options.CredentialsProvider = new CredentialsHandler(
-                        //(url, usernameFromUrl, types) =>
-                        //    new UsernamePasswordCredentials()
-                        //    {
-                        //        Username = "myusername",
-                        //        Password = "mypassword"
-                        //    });
+                            var pushRefSpec = @"refs/heads/master";
+                            repo.Network.Push(remote, pushRefSpec, options, null, "GitPusher push");
+                        }
 
-                        var pushRefSpec = @"refs/heads/master";
-                        repo.Network.Push(remote, pushRefSpec, options, null, "GitPusher push");
                     }
                 }
             }
