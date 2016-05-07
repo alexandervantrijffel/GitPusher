@@ -1,11 +1,11 @@
 ﻿{
     Repositories: [ { 
         # base directory of git repository
-        BaseDir: "D:\\ptbbackup_test\\ptbbackup",
+        BaseDir: "c:\\gitpushertestrepository",
         # When a change is detected, GitPusher can bundle all changes in the given period and commit at once 
         # Specify how many seconds GitPusher should wait with the commit after a file change has been detected. 
-        # The default value is 120 seconds. 
-        WaitBeforeCommit: 5,
+        # The default value is 120 seconds.
+        WaitBeforeCommit: 15,
         # Names of remotes where commits have to be pushed to.
         Remotes: ["origin"] 
     } ]

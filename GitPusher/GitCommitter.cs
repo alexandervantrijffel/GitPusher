@@ -1,5 +1,6 @@
 using System.Linq;
 using LibGit2Sharp;
+using Structura.SharedComponents.Utilities;
 
 namespace GitPusher
 {
@@ -15,9 +16,16 @@ namespace GitPusher
             using (var repo = new Repository(config.BaseDir))
             {
                 // todo, if user.name or user.email are not set in config, set them now!
-                repo.Config.Set("diff.renames", "copies");
+                if (string.IsNullOrEmpty(repo.Config.Get<string>("user.name").Value))
+                    repo.Config.Set("user.name", "gitpusher");
 
-                var retrievalOptions = new StatusOptions {DetectRenamesInWorkDir = true, DetectRenamesInIndex = true};
+                if (string.IsNullOrEmpty(repo.Config.Get<string>("user.email").Value))
+                    repo.Config.Set("user.email", "noreply@nodomain.com");
+
+                repo.Config.Set("diff.renames", "copies");
+				repo.Config.Set("http.postBuffer", 524288000);
+				
+				var retrievalOptions = new StatusOptions {DetectRenamesInWorkDir = true, DetectRenamesInIndex = true};
                 RepositoryStatus status = repo.RetrieveStatus(retrievalOptions);
                 if (status.IsDirty)
                 {
@@ -53,24 +61,28 @@ namespace GitPusher
                     if (toCommit || status.Staged.Any())
                     {
                         repo.Commit("GitPusher commit.");
+	                    foreach (var rmt in config.Remotes)
+	                    {
+		                    if (!repo.Network.Remotes.Any(r => r.Name == rmt))
+		                    {
+			                    FormatLoggerAccessor.Instance().Error($"Remote '{rmt}' not found in git repository. Please check the name with 'git remote -v' and try again.");
+			                    continue;
+		                    }
+	                        var remote = repo.Network.Remotes[rmt];
+							var options = new PushOptions();
 
-                        foreach (var remoteName in config.Remotes)
-                        {
-                            var remote = repo.Network.Remotes[remoteName];
-                            var options = new PushOptions();
+							//options.CredentialsProvider = new CredentialsHandler((url, usernameFromUrl, types) =>
+							//	new DefaultCredentials());
 
-                            //options.CredentialsProvider = new CredentialsHandler(
-                            //(url, usernameFromUrl, types) =>
-                            //    new UsernamePasswordCredentials()
-                            //    {
-                            //        Username = "myusername",
-                            //        Password = "mypassword"
-                            //    });
+							//new UsernamePasswordCredentials()
+							//{
+							//    Username = "myusername",
+							//    Password = "mypassword"
+							//});
 
-                            var pushRefSpec = @"refs/heads/master";
-                            repo.Network.Push(remote, pushRefSpec, options, null, "GitPusher push");
-                        }
-
+							var pushRefSpec = @"refs/heads/master";
+							repo.Network.Push(remote, pushRefSpec, options, null, "GitPusher push");
+						}
                     }
                 }
             }

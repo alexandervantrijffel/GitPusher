@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using log4net;
 using Structura.SharedComponents.Utilities;
@@ -33,6 +34,8 @@ namespace GitPusher
 
         private static void GlobalExceptionHandler(object sender, UnhandledExceptionEventArgs e)
         {
+            FormatLoggerAccessor.Instance().Error("Global exception handler error", (Exception)e.ExceptionObject);
+
             if (Debugger.IsAttached)
                 Debugger.Break();
         }
