@@ -4,3 +4,4 @@ Windows service that watches directories and automatically commits and pushes ch
 ### Getting started
 On Windows, import the file  RegisterEventLogSource.reg to the Windows registry to register the GitPusher application for the event log.
 
+Maintained by Alexander van Trijffel of [Software Development Consultancy company Structura](http://structura.ws)
